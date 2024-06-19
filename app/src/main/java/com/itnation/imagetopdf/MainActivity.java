@@ -67,25 +67,7 @@ public class MainActivity extends AppCompatActivity {
         btnSelectImages.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    if (!Environment.isExternalStorageManager()) {
-                        Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                                Uri.parse("package:" + getPackageName()));
-                        startActivityForResult(intent, STORAGE_PERMISSION_CODE);
-                    } else {
-                        selectImages();
-                        recyclerView.setVisibility(View.VISIBLE);
-                        ic_view.setVisibility(View.GONE);
-                    }
-                } else {
-                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_CODE);
-                    } else {
-                        selectImages();
-                        recyclerView.setVisibility(View.VISIBLE);
-                        ic_view.setVisibility(View.GONE);
-                    }
-                }
+                checkAndRequestPermissions();
             }
         });
 
@@ -122,6 +104,35 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         alertDialog.show();
+    }
+
+    private void checkAndRequestPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_IMAGES}, STORAGE_PERMISSION_CODE);
+            } else {
+                selectImages();
+                recyclerView.setVisibility(View.VISIBLE);
+                ic_view.setVisibility(View.GONE);
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, STORAGE_PERMISSION_CODE);
+            } else {
+                selectImages();
+                recyclerView.setVisibility(View.VISIBLE);
+                ic_view.setVisibility(View.GONE);
+            }
+        } else {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_CODE);
+            } else {
+                selectImages();
+                recyclerView.setVisibility(View.VISIBLE);
+                ic_view.setVisibility(View.GONE);
+            }
+        }
     }
 
     private void selectImages() {
